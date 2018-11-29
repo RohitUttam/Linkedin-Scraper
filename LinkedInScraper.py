@@ -5,17 +5,24 @@ from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from bs4 import BeautifulSoup
 import csv
+import pandas as pd
+import numpy as np
+#First install chromium webdriver and add to PATH
+#pip install selenium
+#pip install bs4
 
 #Login to Linkedin
 EMAIL=input('Linkedin Email:')
 PASSWORD=input('Linkedin Password:')
+Keyword=input('Insert Keyword to search for:')
+
 
 browser=webdriver.Chrome()
 browser.get("https://linkedin.com/uas/login")
 
-emailElement=browser.find_element_by_id("session_key-login")
+emailElement=browser.find_element_by_id("username")
 emailElement.send_keys(EMAIL)
-passElement = browser.find_element_by_id("session_password-login")
+passElement = browser.find_element_by_id("password")
 passElement.send_keys(PASSWORD)
 passElement.submit()
 
@@ -24,7 +31,7 @@ print("[+] Successfully logged in!")
 time.sleep(random.uniform(4,10.9))
 
 #LinkedInSearch
-browser.get("https://www.linkedin.com/jobs/search/?keywords=Multinational&location=Germany&locationId=de%3A0")
+browser.get("https://www.linkedin.com/jobs/search/?keywords="+str(Keyword)+"&location=Germany&locationId=de%3A0")
 page =BeautifulSoup(browser.page_source)
 
 #Get Job links
@@ -76,20 +83,6 @@ for i in jobs:
         company=company.strip('\n')
         companies.append(company.strip())
 
-#insert header
-names.insert(0,"NAMES")
-jobtitles.insert(0,"JOBTITLES:")
-companies.insert(0,"COMPANY NAMES:")
-
 #write .csv file
-with open('linkedin.csv', 'w', newline='') as f:
-        linwriter= csv.writer(f)
-        linwriter.writerow(names)
-        linwriter.writerow(jobtitles)
-        linwriter.writerow(companies)
-
-
-
-
-
-
+df = pd.DataFrame(np.transpose(np.array([names, jobtitles,companies])), columns = ('Names','JobTitles','Company Names'))
+df.to_csv(r'/Linkedin_Scraped.csv')
